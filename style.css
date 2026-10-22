@@ -115,10 +115,10 @@ table.data-table tfoot td { font-weight: 700; background: #e8f5e9; color: #0a6e2
 /* BOUTON INSTALL */
 .install-btn { position: fixed; bottom: 20px; right: 20px; background: #0a6e2c; color: white; border: none; padding: 12px 20px; border-radius: 30px; font-size: 14px; font-weight: 600; box-shadow: 0 4px 12px rgba(10,110,44,0.4); z-index: 200; cursor: pointer; }
 
-/* === RÈGLES D'IMPRESSION / PDF === */
+/* Impression */
 @media print {
-  .app-header, .side-menu, .menu-overlay, .btn-primary, .btn-secondary, .btn-mini, .install-btn, .card h3, #rapportFreqBox .btn-mini, #rapportFreqBox .btn-mini.danger, #rapportFreqBox .btn-mini.gray, #rapportFreqBox .btn-mini.orange, #rapportFreqBox .btn-mini.blue { display: none !important; }
+  .app-header, .side-menu, .menu-overlay, .btn-primary, .btn-secondary, .btn-mini, .install-btn, .card h3, .no-print { display: none !important; }
   body, .card, .entity-block { background: white !important; box-shadow: none !important; margin: 0 !important; padding: 0 !important; }
   .entity-block { border: 1px solid #ccc !important; padding: 10px !important; page-break-inside: avoid; }
 }
-.no-print { display: none !important; }
+.no-print { display: inline-block; }
