@@ -1,7 +1,7 @@
 {
-  "name": "EMM FRÉQUENCE - Gestion des Fréquences",
-  "short_name": "EMM FRÉQUENCE",
-  "description": "Application de gestion des fréquences des entités",
+  "name": "EMM RAPPORTS - Diffusion & Numérique",
+  "short_name": "EMM RAPPORTS",
+  "description": "Application de gestion des rapports de diffusion et numérique",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
