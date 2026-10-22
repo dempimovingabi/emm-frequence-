@@ -21,17 +21,11 @@ function initDB() {
     ]);
   }
   if (!DB.get('session')) DB.set('session', null);
-  
-  // MODULE DIFFUSION (Ancien Fréquence)
   if (!DB.get('entites')) DB.set('entites', []);
   if (!DB.get('participations')) DB.set('participations', []);
   if (!DB.get('fichesMensuelles')) DB.set('fichesMensuelles', []);
-
-  // MODULE NUMÉRIQUE
   if (!DB.get('entitesNum')) DB.set('entitesNum', []);
   if (!DB.get('fichesNumeriques')) DB.set('fichesNumeriques', []);
-
-  // Commun
   if (!DB.get('annonces')) DB.set('annonces', []);
 
   ['entites','participations','fichesMensuelles','entitesNum','fichesNumeriques'].forEach(function(key) {
