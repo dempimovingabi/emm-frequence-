@@ -10,7 +10,7 @@
 </head>
 <body>
 
-<!-- SPLASH SCREEN (Animation texte) -->
+<!-- SPLASH SCREEN -->
 <div id="splashScreen" class="screen active">
   <div class="splash-content">
     <div class="splash-anim">
@@ -43,11 +43,8 @@
     <button class="btn-logout" onclick="logout()" title="Se déconnecter">⏻</button>
   </header>
 
-  <!-- MENU LATÉRAL (Drawer) -->
   <div id="sideMenu" class="side-menu">
-    <div class="menu-header">
-      <h2>Menu</h2>
-    </div>
+    <div class="menu-header"><h2>Menu</h2></div>
     <button class="menu-item active" onclick="switchMainTab('general', this)">📊 Général</button>
     <button class="menu-item" onclick="switchMainTab('frequence', this)">📈 Fréquence</button>
     <button class="menu-item" onclick="switchMainTab('admin', this)">⚙️ Admin</button>
@@ -232,6 +229,10 @@
 
     <div class="card">
       <h3>📊 Rapports Module I</h3>
+      <div class="input-group">
+        <label>Nom de la fiche globale (ex: EMM KASAÏ CENTRAL)</label>
+        <input type="text" id="nomRapportGlobal" placeholder="Entrez le nom de la fiche..." value="EMM KASAÏ CENTRAL">
+      </div>
       <button class="btn-primary" onclick="rapportFreqGlobal()">📊 Global</button>
       <button class="btn-secondary" onclick="rapportFreqDetaille()">📋 Détaillé</button>
       <button class="btn-secondary" onclick="imprimerRapportFreq()">🖨️ Imprimer</button>
@@ -290,4 +291,4 @@ if ('serviceWorker' in navigator) {
 }
 </script>
 </body>
-                                                                </html>
+  </html>
