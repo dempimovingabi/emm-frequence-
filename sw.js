@@ -1,4 +1,4 @@
-const CACHE_NAME = 'emm-frequence-v1-' + Date.now();
+const CACHE_NAME = 'emm-rapports-v1-' + Date.now();
 const URLS = ['./','./index.html','./style.css','./app.js','./db.js','./manifest.json'];
 
 self.addEventListener('install', function(event) {
