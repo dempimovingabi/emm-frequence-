@@ -1,15 +1,15 @@
 const DB = {
   get: function(key, def) {
     try {
-      const v = localStorage.getItem('emmfrequence_' + key);
+      const v = localStorage.getItem('emmrapport_' + key);
       return v ? JSON.parse(v) : (def !== undefined ? def : null);
     } catch(e) { return def; }
   },
   set: function(key, val) {
-    localStorage.setItem('emmfrequence_' + key, JSON.stringify(val));
+    localStorage.setItem('emmrapport_' + key, JSON.stringify(val));
   },
   remove: function(key) {
-    localStorage.removeItem('emmfrequence_' + key);
+    localStorage.removeItem('emmrapport_' + key);
   }
 };
 
@@ -21,12 +21,20 @@ function initDB() {
     ]);
   }
   if (!DB.get('session')) DB.set('session', null);
+  
+  // MODULE DIFFUSION (Ancien Fréquence)
   if (!DB.get('entites')) DB.set('entites', []);
   if (!DB.get('participations')) DB.set('participations', []);
   if (!DB.get('fichesMensuelles')) DB.set('fichesMensuelles', []);
+
+  // MODULE NUMÉRIQUE
+  if (!DB.get('entitesNum')) DB.set('entitesNum', []);
+  if (!DB.get('fichesNumeriques')) DB.set('fichesNumeriques', []);
+
+  // Commun
   if (!DB.get('annonces')) DB.set('annonces', []);
 
-  ['entites','participations','fichesMensuelles'].forEach(function(key) {
+  ['entites','participations','fichesMensuelles','entitesNum','fichesNumeriques'].forEach(function(key) {
     var list = DB.get(key, []);
     var modifie = false;
     list.forEach(function(item) {
