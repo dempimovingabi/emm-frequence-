@@ -1,5 +1,5 @@
 // ============================================
-// EMM FRÉQUENCE — LOGIQUE PRINCIPALE v3
+// EMM FRÉQUENCE — LOGIQUE PRINCIPALE v4
 // ============================================
 
 var currentUser = null;
@@ -10,7 +10,7 @@ function showSplash() {
     var sess = DB.get('session');
     if (sess) { currentUser = sess; appliquerSession(); showScreen('mainScreen'); }
     else { showScreen('loginScreen'); var inp = document.getElementById('loginUsername'); if (inp) inp.focus(); }
-  }, 2500);
+  }, 3000); // 3 secondes pour l'animation
 }
 
 function showScreen(id) {
@@ -21,11 +21,19 @@ function showScreen(id) {
   window.scrollTo(0, 0);
 }
 
+function toggleMenu() {
+  var menu = document.getElementById('sideMenu');
+  var overlay = document.getElementById('menuOverlay');
+  menu.classList.toggle('open');
+  overlay.classList.toggle('active');
+}
+
 function switchMainTab(name, btn) {
-  document.querySelectorAll('.main-tab').forEach(function(t) { t.classList.remove('active'); });
+  document.querySelectorAll('.menu-item').forEach(function(t) { t.classList.remove('active'); });
   document.querySelectorAll('.main-tab-content').forEach(function(c) { c.classList.remove('active'); });
   btn.classList.add('active');
   document.getElementById('tab-' + name).classList.add('active');
+  toggleMenu(); // Ferme le menu après le clic
   if (name === 'general') afficherDashboard();
 }
 
@@ -91,9 +99,9 @@ function afficherAnnonces() {
     html += '<strong>📢 ' + a.date + '</strong><br>' + echapper(a.texte);
     if (isAdmin()) {
       html += '<div style="margin-top:6px">';
-      html += '<button class="btn-mini orange" onclick="modifierAnnonce(\'' + a.id + '\')">✏️</button>';
-      html += '<button class="btn-mini ' + (a.archived ? 'blue' : 'gray') + '" onclick="archiverAnnonce(\'' + a.id + '\')">' + (a.archived ? '↩️' : '📦') + '</button>';
-      html += '<button class="btn-mini danger" onclick="supprimerAnnonce(\'' + a.id + '\')">🗑️</button>';
+      html += '<button class="btn-mini orange no-print" onclick="modifierAnnonce(\'' + a.id + '\')">✏️</button>';
+      html += '<button class="btn-mini ' + (a.archived ? 'blue' : 'gray') + ' no-print" onclick="archiverAnnonce(\'' + a.id + '\')">' + (a.archived ? '↩️' : '📦') + '</button>';
+      html += '<button class="btn-mini danger no-print" onclick="supprimerAnnonce(\'' + a.id + '\')">🗑️</button>';
       html += '</div>';
     }
     html += '</div>';
@@ -181,9 +189,9 @@ function afficherListeEntites() {
     html += '<div class="item-list" style="padding:12px' + (e.archived ? ';opacity:0.7;background:#f0f0f0' : '') + '">';
     html += '<div style="font-size:14px;color:#0a6e2c;font-weight:600;margin-bottom:4px">🏛️ ' + echapper(e.type) + ' - ' + echapper(e.nom) + (e.archived ? ' <span class="badge badge-archive">📦 Archivée</span>' : '') + '</div>';
     html += '<div style="font-size:12px;color:#666;margin-bottom:8px">👤 ' + echapper(e.responsable) + '</div>';
-    html += '<button class="btn-mini orange" onclick="modifierEntite(\'' + e.id + '\')">✏️ Modifier</button> ';
-    html += '<button class="btn-mini ' + (e.archived ? 'blue' : 'gray') + '" onclick="archiverEntite(\'' + e.id + '\')">' + (e.archived ? '↩️ Désarchiver' : '📦 Archiver') + '</button> ';
-    html += '<button class="btn-mini danger" onclick="supprimerEntite(\'' + e.id + '\')">🗑️ Supprimer</button>';
+    html += '<button class="btn-mini orange no-print" onclick="modifierEntite(\'' + e.id + '\')">✏️ Modifier</button> ';
+    html += '<button class="btn-mini ' + (e.archived ? 'blue' : 'gray') + ' no-print" onclick="archiverEntite(\'' + e.id + '\')">' + (e.archived ? '↩️ Désarchiver' : '📦 Archiver') + '</button> ';
+    html += '<button class="btn-mini danger no-print" onclick="supprimerEntite(\'' + e.id + '\')">🗑️ Supprimer</button>';
     html += '</div>';
   });
   box.innerHTML = html;
@@ -256,14 +264,14 @@ function afficherJournaliere() {
     html += '<div class="entity-block">';
     html += '<h4>📍 ' + echapper(getEntiteNom(eid)) + '</h4>';
     html += '<div class="table-wrapper"><table class="data-table">';
-    html += '<thead><tr><th>Date</th><th>M</th><th>S</th><th>NV</th><th>Actions</th></tr></thead><tbody>';
+    html += '<thead><tr><th>Date</th><th>M</th><th>S</th><th>NV</th><th class="no-print">Actions</th></tr></thead><tbody>';
     lignes.forEach(function(p) {
       html += '<tr' + (p.archived ? ' style="opacity:0.6"' : '') + '><td>' + fmtDate(p.date) + '</td><td class="num">' + p.m + '</td><td class="num">' + p.s + '</td><td class="num">' + p.n + '</td>';
-      html += '<td><button class="btn-mini orange" onclick="modifierParticipation(\'' + p.id + '\')">✏️</button>';
+      html += '<td class="no-print"><button class="btn-mini orange" onclick="modifierParticipation(\'' + p.id + '\')">✏️</button>';
       html += '<button class="btn-mini ' + (p.archived ? 'blue' : 'gray') + '" onclick="archiverParticipation(\'' + p.id + '\')">' + (p.archived ? '↩️' : '📦') + '</button>';
       html += '<button class="btn-mini danger" onclick="supprimerParticipation(\'' + p.id + '\')">🗑️</button></td></tr>';
     });
-    html += '</tbody><tfoot><tr><td>TOTAL</td><td class="num">' + tm + '</td><td class="num">' + ts + '</td><td class="num">' + tn + '</td><td></td></tr></tfoot>';
+    html += '</tbody><tfoot><tr><td>TOTAL</td><td class="num">' + tm + '</td><td class="num">' + ts + '</td><td class="num">' + tn + '</td><td class="no-print"></td></tr></tfoot>';
     html += '</table></div></div>';
   });
   box.innerHTML = html;
@@ -315,7 +323,7 @@ function tableFicheMensuelle(f) {
   h += '<h4>📍 ' + echapper(getEntiteNom(f.entiteId)) + ' — ' + echapper(f.mois) + ' ' + echapper(f.annee);
   if (f.archived) h += ' <span class="badge badge-archive">📦 Archivée</span>';
   h += '</h4>';
-  h += '<div style="display:flex;gap:6px;flex-wrap:wrap;margin:10px 0;padding:10px;background:#fff;border-radius:8px;border:1px dashed #0a6e2c">';
+  h += '<div class="no-print" style="display:flex;gap:6px;flex-wrap:wrap;margin:10px 0;padding:10px;background:#fff;border-radius:8px;border:1px dashed #0a6e2c">';
   h += '<button class="btn-mini orange" onclick="modifierFiche(\'' + f.id + '\')" style="padding:8px 12px;font-size:12px">✏️ Modifier</button>';
   if (f.archived) h += '<button class="btn-mini blue" onclick="archiverFiche(\'' + f.id + '\')" style="padding:8px 12px;font-size:12px">↩️ Désarchiver</button>';
   else h += '<button class="btn-mini gray" onclick="archiverFiche(\'' + f.id + '\')" style="padding:8px 12px;font-size:12px">📦 Archiver</button>';
@@ -530,7 +538,7 @@ function imprimerBox(boxId) {
   var c = document.getElementById(boxId).innerHTML;
   if (!c) return alert('Rapport vide');
   var w = window.open('', '_blank');
-  w.document.write('<html><head><meta charset="UTF-8"><title>Rapport</title><style>body{font-family:Arial;padding:20px}table{width:100%;border-collapse:collapse;font-size:12px}th{background:#0a6e2c;color:white;padding:8px}td{padding:7px;border-bottom:1px solid #ddd}td.num{text-align:right}</style></head><body><h1 style="text-align:center;color:#0a6e2c">EMM FRÉQUENCE</h1><hr>'+c+'</body></html>');
+  w.document.write('<html><head><meta charset="UTF-8"><title>Rapport</title><style>body{font-family:Arial;padding:20px}table{width:100%;border-collapse:collapse;font-size:12px}th{background:#0a6e2c;color:white;padding:8px}td{padding:7px;border-bottom:1px solid #ddd}td.num{text-align:right}.no-print{display:none}</style></head><body><h1 style="text-align:center;color:#0a6e2c">EMM FRÉQUENCE</h1><hr>'+c+'</body></html>');
   w.document.close(); setTimeout(function() { w.print(); }, 600);
 }
 function exporterWordFreq() { exporterWordBox('rapportFreqBox','Frequence'); }
@@ -538,7 +546,7 @@ function exporterWordGeneral() { exporterWordBox('rapportGeneralBox','General');
 function exporterWordBox(boxId, nom) {
   var contenu = document.getElementById(boxId).innerHTML;
   if (!contenu) return alert('Rapport vide');
-  var html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="UTF-8"></head><body>';
+  var html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="UTF-8"><style>.no-print{display:none}</style></head><body>';
   html += '<h1 style="text-align:center;color:#0a6e2c">EMM FRÉQUENCE</h1><hr>' + contenu + '</body></html>';
   var blob = new Blob(['\ufeff', html], { type: 'application/msword' });
   var url = URL.createObjectURL(blob);
@@ -553,7 +561,7 @@ function exporterPDFBox(boxId) {
   var contenu = document.getElementById(boxId).innerHTML;
   if (!contenu) return alert('Rapport vide');
   var w = window.open('', '_blank');
-  w.document.write('<html><head><meta charset="UTF-8"><title>PDF</title><style>body{font-family:Arial;padding:20px}table{width:100%;border-collapse:collapse;font-size:12px}th{background:#0a6e2c;color:white;padding:8px}td{padding:7px;border-bottom:1px solid #ddd}td.num{text-align:right}</style></head><body><h1 style="text-align:center;color:#0a6e2c">EMM FRÉQUENCE</h1><hr>'+contenu+'</body></html>');
+  w.document.write('<html><head><meta charset="UTF-8"><title>PDF</title><style>body{font-family:Arial;padding:20px}table{width:100%;border-collapse:collapse;font-size:12px}th{background:#0a6e2c;color:white;padding:8px}td{padding:7px;border-bottom:1px solid #ddd}td.num{text-align:right}.no-print{display:none}</style></head><body><h1 style="text-align:center;color:#0a6e2c">EMM FRÉQUENCE</h1><hr>'+contenu+'</body></html>');
   w.document.close(); setTimeout(function() { w.print(); }, 800);
 }
 function partagerRapportFreq() { partagerBox('rapportFreqBox','Fréquences'); }
@@ -594,10 +602,10 @@ function afficherUtilisateurs() {
   var users = DB.get('users', []);
   var box = document.getElementById('listeUtilisateurs');
   if (!box) return;
-  var html = '<div class="table-wrapper"><table class="data-table"><thead><tr><th>Nom</th><th>Rôle</th><th>Actions</th></tr></thead><tbody>';
+  var html = '<div class="table-wrapper"><table class="data-table"><thead><tr><th>Nom</th><th>Rôle</th><th class="no-print">Actions</th></tr></thead><tbody>';
   users.forEach(function(u) {
     html += '<tr><td>' + echapper(u.nom) + '</td><td>' + (u.role === 'admin' ? '👑 Admin' : '👤 Utilisateur') + '</td>';
-    html += '<td>';
+    html += '<td class="no-print">';
     if (u.nom !== 'admin') html += '<button class="btn-mini danger" onclick="supprimerUtilisateur(\'' + u.id + '\')">🗑️</button>';
     html += '</td></tr>';
   });
