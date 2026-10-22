@@ -1,5 +1,5 @@
 // ============================================
-// EMM FRÉQUENCE — LOGIQUE PRINCIPALE v4
+// EMM FRÉQUENCE — LOGIQUE PRINCIPALE v6
 // ============================================
 
 var currentUser = null;
@@ -10,7 +10,7 @@ function showSplash() {
     var sess = DB.get('session');
     if (sess) { currentUser = sess; appliquerSession(); showScreen('mainScreen'); }
     else { showScreen('loginScreen'); var inp = document.getElementById('loginUsername'); if (inp) inp.focus(); }
-  }, 3000); // 3 secondes pour l'animation
+  }, 3000);
 }
 
 function showScreen(id) {
@@ -33,7 +33,7 @@ function switchMainTab(name, btn) {
   document.querySelectorAll('.main-tab-content').forEach(function(c) { c.classList.remove('active'); });
   btn.classList.add('active');
   document.getElementById('tab-' + name).classList.add('active');
-  toggleMenu(); // Ferme le menu après le clic
+  toggleMenu();
   if (name === 'general') afficherDashboard();
 }
 
@@ -98,10 +98,10 @@ function afficherAnnonces() {
     html += '<div class="item-list"' + (a.archived ? ' style="opacity:0.7;background:#f0f0f0"' : '') + '>';
     html += '<strong>📢 ' + a.date + '</strong><br>' + echapper(a.texte);
     if (isAdmin()) {
-      html += '<div style="margin-top:6px">';
-      html += '<button class="btn-mini orange no-print" onclick="modifierAnnonce(\'' + a.id + '\')">✏️</button>';
-      html += '<button class="btn-mini ' + (a.archived ? 'blue' : 'gray') + ' no-print" onclick="archiverAnnonce(\'' + a.id + '\')">' + (a.archived ? '↩️' : '📦') + '</button>';
-      html += '<button class="btn-mini danger no-print" onclick="supprimerAnnonce(\'' + a.id + '\')">🗑️</button>';
+      html += '<div style="margin-top:6px" class="no-print">';
+      html += '<button class="btn-mini orange" onclick="modifierAnnonce(\'' + a.id + '\')">✏️</button>';
+      html += '<button class="btn-mini ' + (a.archived ? 'blue' : 'gray') + '" onclick="archiverAnnonce(\'' + a.id + '\')">' + (a.archived ? '↩️' : '📦') + '</button>';
+      html += '<button class="btn-mini danger" onclick="supprimerAnnonce(\'' + a.id + '\')">🗑️</button>';
       html += '</div>';
     }
     html += '</div>';
@@ -189,9 +189,11 @@ function afficherListeEntites() {
     html += '<div class="item-list" style="padding:12px' + (e.archived ? ';opacity:0.7;background:#f0f0f0' : '') + '">';
     html += '<div style="font-size:14px;color:#0a6e2c;font-weight:600;margin-bottom:4px">🏛️ ' + echapper(e.type) + ' - ' + echapper(e.nom) + (e.archived ? ' <span class="badge badge-archive">📦 Archivée</span>' : '') + '</div>';
     html += '<div style="font-size:12px;color:#666;margin-bottom:8px">👤 ' + echapper(e.responsable) + '</div>';
-    html += '<button class="btn-mini orange no-print" onclick="modifierEntite(\'' + e.id + '\')">✏️ Modifier</button> ';
-    html += '<button class="btn-mini ' + (e.archived ? 'blue' : 'gray') + ' no-print" onclick="archiverEntite(\'' + e.id + '\')">' + (e.archived ? '↩️ Désarchiver' : '📦 Archiver') + '</button> ';
-    html += '<button class="btn-mini danger no-print" onclick="supprimerEntite(\'' + e.id + '\')">🗑️ Supprimer</button>';
+    html += '<div class="no-print">';
+    html += '<button class="btn-mini orange" onclick="modifierEntite(\'' + e.id + '\')">✏️ Modifier</button> ';
+    html += '<button class="btn-mini ' + (e.archived ? 'blue' : 'gray') + '" onclick="archiverEntite(\'' + e.id + '\')">' + (e.archived ? '↩️ Désarchiver' : '📦 Archiver') + '</button> ';
+    html += '<button class="btn-mini danger" onclick="supprimerEntite(\'' + e.id + '\')">🗑️ Supprimer</button>';
+    html += '</div>';
     html += '</div>';
   });
   box.innerHTML = html;
@@ -367,7 +369,7 @@ function archiverFiche(id) {
 }
 function supprimerFiche(id) {
   if (!confirm('⚠️ Supprimer cette fiche ?')) return;
-  DB.set('fichesMensuelles', DB.get('fichesMensuelles', []).filter(function(x) { return x.id !== id; })); alert('✅ Supprimée'); rapportFreqDetaille();
+  DB.set('fichesMensuelles', DB.get('fichesMensuelles', []).filter(function(x) { return x.id !== id; })); alert('✅ Supprimée'); rechercherFreqAvance();
 }
 function rechercherFreqAvance() {
   var q = (document.getElementById('searchFreq').value || '').toUpperCase().trim();
@@ -382,8 +384,8 @@ function rechercherFreqAvance() {
     var okM = !mois || f.mois === mois;
     return okQ && okA && okM;
   });
-  var html = '<h3>Résultats (' + fiches.length + ')</h3>';
-  if (!fiches.length) html += '<p>Aucun résultat.</p>';
+  var html = '<div class="rapport-header"><h3>🔍 Résultats de la recherche (' + fiches.length + ')</h3></div>';
+  if (!fiches.length) html += '<p style="text-align:center;color:#888">Aucune fiche trouvée.</p>';
   else fiches.forEach(function(f) { html += tableFicheMensuelle(f); });
   document.getElementById('rapportFreqBox').innerHTML = html;
 }
@@ -395,13 +397,16 @@ function reinitialiserRechercheFreq() {
   document.getElementById('rapportFreqBox').innerHTML = '';
 }
 
-// ========== LE RAPPORT GLOBAL FUSIONNÉ ==========
+// ========== RAPPORT GLOBAL FUSIONNÉ ==========
 function rapportFreqGlobal() {
   var fiches = DB.get('fichesMensuelles', []).filter(function(f) { return !f.archived; });
   if (!fiches.length) { 
-    document.getElementById('rapportFreqBox').innerHTML = '<p>Aucune fiche active pour générer un rapport global.</p>'; 
+    document.getElementById('rapportFreqBox').innerHTML = '<p style="text-align:center;color:#888">Aucune fiche active pour générer un rapport global.</p>'; 
     return; 
   }
+
+  // Récupération du nom personnalisé
+  var nomFiche = document.getElementById('nomRapportGlobal').value.trim() || 'EMM KASAÏ CENTRAL';
 
   var totaux = {
     mEncadreurs: 0, mMembresActifs: 0, mSympathisants: 0, mFMembres: 0, mFSympathisants: 0, mFNouveaux: 0,
@@ -425,7 +430,7 @@ function rapportFreqGlobal() {
     if (f.actions && f.actions.trim()) textes.actions.push('<b>' + nomEntite + ' :</b> ' + echapper(f.actions));
   });
 
-  var html = '<div class="rapport-header"><h3>📊 FICHE MENSUELLE EMM KASAÏ CENTRAL</h3><p>Fusion globale de toutes les entités actives</p></div>';
+  var html = '<div class="rapport-header"><h3>📊 FICHE MENSUELLE ' + echapper(nomFiche).toUpperCase() + '</h3><p>Fusion globale de toutes les entités actives</p></div>';
   
   html += '<div class="entity-block">';
   html += '<h4>🌍 TOTAUX GLOBAUX (Toutes entités confondues)</h4>';
@@ -492,7 +497,7 @@ function rapportFreqGlobal() {
 
 function rapportFreqDetaille() {
   var fiches = DB.get('fichesMensuelles', []).filter(function(f) { return !f.archived; });
-  if (!fiches.length) { document.getElementById('rapportFreqBox').innerHTML = '<p>Aucune fiche active.</p>'; return; }
+  if (!fiches.length) { document.getElementById('rapportFreqBox').innerHTML = '<p style="text-align:center;color:#888">Aucune fiche active.</p>'; return; }
   var html = '<div class="rapport-header"><h3>📋 RAPPORT DÉTAILLÉ — FRÉQUENCES</h3></div>';
   fiches.forEach(function(f) { html += tableFicheMensuelle(f); });
   document.getElementById('rapportFreqBox').innerHTML = html;
@@ -538,7 +543,7 @@ function imprimerBox(boxId) {
   var c = document.getElementById(boxId).innerHTML;
   if (!c) return alert('Rapport vide');
   var w = window.open('', '_blank');
-  w.document.write('<html><head><meta charset="UTF-8"><title>Rapport</title><style>body{font-family:Arial;padding:20px}table{width:100%;border-collapse:collapse;font-size:12px}th{background:#0a6e2c;color:white;padding:8px}td{padding:7px;border-bottom:1px solid #ddd}td.num{text-align:right}.no-print{display:none}</style></head><body><h1 style="text-align:center;color:#0a6e2c">EMM FRÉQUENCE</h1><hr>'+c+'</body></html>');
+  w.document.write('<html><head><meta charset="UTF-8"><title>Rapport</title><style>body{font-family:Arial;padding:20px}table{width:100%;border-collapse:collapse;font-size:12px}th{background:#0a6e2c;color:white;padding:8px}td{padding:7px;border-bottom:1px solid #ddd}td.num{text-align:right}.no-print{display:none !important}</style></head><body><h1 style="text-align:center;color:#0a6e2c">EMM FRÉQUENCE</h1><hr>'+c+'</body></html>');
   w.document.close(); setTimeout(function() { w.print(); }, 600);
 }
 function exporterWordFreq() { exporterWordBox('rapportFreqBox','Frequence'); }
@@ -546,7 +551,7 @@ function exporterWordGeneral() { exporterWordBox('rapportGeneralBox','General');
 function exporterWordBox(boxId, nom) {
   var contenu = document.getElementById(boxId).innerHTML;
   if (!contenu) return alert('Rapport vide');
-  var html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="UTF-8"><style>.no-print{display:none}</style></head><body>';
+  var html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="UTF-8"><style>.no-print{display:none !important}</style></head><body>';
   html += '<h1 style="text-align:center;color:#0a6e2c">EMM FRÉQUENCE</h1><hr>' + contenu + '</body></html>';
   var blob = new Blob(['\ufeff', html], { type: 'application/msword' });
   var url = URL.createObjectURL(blob);
@@ -561,7 +566,7 @@ function exporterPDFBox(boxId) {
   var contenu = document.getElementById(boxId).innerHTML;
   if (!contenu) return alert('Rapport vide');
   var w = window.open('', '_blank');
-  w.document.write('<html><head><meta charset="UTF-8"><title>PDF</title><style>body{font-family:Arial;padding:20px}table{width:100%;border-collapse:collapse;font-size:12px}th{background:#0a6e2c;color:white;padding:8px}td{padding:7px;border-bottom:1px solid #ddd}td.num{text-align:right}.no-print{display:none}</style></head><body><h1 style="text-align:center;color:#0a6e2c">EMM FRÉQUENCE</h1><hr>'+contenu+'</body></html>');
+  w.document.write('<html><head><meta charset="UTF-8"><title>PDF</title><style>body{font-family:Arial;padding:20px}table{width:100%;border-collapse:collapse;font-size:12px}th{background:#0a6e2c;color:white;padding:8px}td{padding:7px;border-bottom:1px solid #ddd}td.num{text-align:right}.no-print{display:none !important}</style></head><body><h1 style="text-align:center;color:#0a6e2c">EMM FRÉQUENCE</h1><hr>'+contenu+'</body></html>');
   w.document.close(); setTimeout(function() { w.print(); }, 800);
 }
 function partagerRapportFreq() { partagerBox('rapportFreqBox','Fréquences'); }
