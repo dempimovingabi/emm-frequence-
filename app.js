@@ -1,10 +1,10 @@
 // ============================================
-// EMM RAPPORTS — LOGIQUE PRINCIPALE v1
+// EMM RAPPORTS — LOGIQUE PRINCIPALE v2
 // ============================================
 
 var currentUser = null;
+var pdfRapportActuel = null;
 
-// ========== SPLASH & NAV ==========
 function showSplash() {
   showScreen('splashScreen');
   setTimeout(function() {
@@ -47,7 +47,6 @@ function switchTabNumerique(tab) {
   toggleMenu();
 }
 
-// ========== LOGIN / LOGOUT ==========
 function login() {
   var nom = document.getElementById('loginUsername').value.trim().toLowerCase();
   var pass = document.getElementById('loginPassword').value.trim();
@@ -87,7 +86,6 @@ function appliquerSession() {
   afficherAnnonces();
 }
 
-// ========== UTILITAIRES ==========
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
 function fmtDate(d) { if (!d) return ''; return new Date(d).toLocaleDateString('fr-FR'); }
 function echapper(s) {
@@ -102,7 +100,7 @@ function filtrerListe(list, filtre) {
 }
 
 // ============================================================
-// ============ MODULE 1 : RAPPORT DIFFUSION ==================
+// MODULE 1 : RAPPORT DIFFUSION
 // ============================================================
 
 function ajouterEntite() {
@@ -116,20 +114,17 @@ function ajouterEntite() {
   DB.set('entites', entites); reinitialiserFormEntite(); refreshAll(); alert('✅ Entité ajoutée');
 }
 function reinitialiserFormEntite() {
-  var a = document.getElementById('jNomEntite'); if (a) a.value = '';
-  var b = document.getElementById('jResponsable'); if (b) b.value = '';
-  var c = document.getElementById('jTypeEntite'); if (c) c.selectedIndex = 0;
+  document.getElementById('jNomEntite').value = '';
+  document.getElementById('jResponsable').value = '';
+  document.getElementById('jTypeEntite').selectedIndex = 0;
 }
 function rafraichirEntites() {
   var entites = DB.get('entites', []).filter(function(e) { return !e.archived; });
   ['jEntiteSelect', 'mEntite'].forEach(function(id) {
-    var sel = document.getElementById(id);
-    if (!sel) return;
-    var val = sel.value;
-    var opts = '';
+    var sel = document.getElementById(id); if (!sel) return;
+    var val = sel.value; var opts = '';
     entites.forEach(function(e) { opts += '<option value="' + e.id + '">' + e.type + ' - ' + e.nom + '</option>'; });
-    sel.innerHTML = opts;
-    if (val) sel.value = val;
+    sel.innerHTML = opts; if (val) sel.value = val;
   });
 }
 function getEntiteNom(id) {
@@ -139,16 +134,14 @@ function getEntiteNom(id) {
 function afficherListeEntites() {
   var filtre = document.getElementById('filtreEntites') ? document.getElementById('filtreEntites').value : 'actif';
   var search = (document.getElementById('searchEntiteListe') ? document.getElementById('searchEntiteListe').value : '').toUpperCase();
-  var entites = DB.get('entites', []);
-  entites = filtrerListe(entites, filtre);
+  var entites = filtrerListe(DB.get('entites', []), filtre);
   if (search) entites = entites.filter(function(e) { return e.nom.indexOf(search) !== -1; });
-  var box = document.getElementById('listeEntites');
-  if (!box) return;
+  var box = document.getElementById('listeEntites'); if (!box) return;
   if (!entites.length) { box.innerHTML = '<p>Aucune entité.</p>'; return; }
   var html = '';
   entites.forEach(function(e) {
     html += '<div class="item-list" style="padding:12px' + (e.archived ? ';opacity:0.7;background:#f0f0f0' : '') + '">';
-    html += '<div style="font-size:14px;color:#0a6e2c;font-weight:600;margin-bottom:4px">🏛️ ' + echapper(e.type) + ' - ' + echapper(e.nom) + (e.archived ? ' <span class="badge badge-archive">📦 Archivée</span>' : '') + '</div>';
+    html += '<div style="font-size:14px;color:#0a6e2c;font-weight:600;margin-bottom:4px">🏛️ ' + echapper(e.type) + ' - ' + echapper(e.nom) + (e.archived ? ' <span class="badge badge-archive">📦</span>' : '') + '</div>';
     html += '<div style="font-size:12px;color:#666;margin-bottom:8px">👤 ' + echapper(e.responsable) + '</div>';
     html += '<div class="no-print">';
     html += '<button class="btn-mini orange" onclick="modifierEntite(\'' + e.id + '\')">✏️</button> ';
@@ -167,14 +160,13 @@ function modifierEntite(id) {
 }
 function archiverEntite(id) {
   var list = DB.get('entites', []); var e = list.find(function(x) { return x.id === id; }); if (!e) return;
-  e.archived = !e.archived; DB.set('entites', list); refreshAll(); alert(e.archived ? '📦 Archivée' : '↩️ Restaurée');
+  e.archived = !e.archived; DB.set('entites', list); refreshAll();
 }
 function supprimerEntite(id) {
-  if (!confirm('⚠️ Supprimer ?')) return;
+  if (!confirm('Supprimer ?')) return;
   DB.set('entites', DB.get('entites', []).filter(function(x) { return x.id !== id; }));
-  refreshAll(); alert('✅ Supprimée');
+  refreshAll();
 }
-
 function enregistrerParticipation() {
   var entiteId = document.getElementById('jEntiteSelect').value;
   var date = document.getElementById('jDate').value;
@@ -192,8 +184,7 @@ function reinitialiserFormParticipation() {
 function afficherJournaliere() {
   var filtre = document.getElementById('filtreParticipations') ? document.getElementById('filtreParticipations').value : 'actif';
   var parts = filtrerListe(DB.get('participations', []), filtre);
-  var box = document.getElementById('listeJournaliere');
-  if (!box) return;
+  var box = document.getElementById('listeJournaliere'); if (!box) return;
   if (!parts.length) { box.innerHTML = '<p>Aucune donnée.</p>'; return; }
   var parEntite = {};
   parts.forEach(function(p) { if (!parEntite[p.entiteId]) parEntite[p.entiteId] = []; parEntite[p.entiteId].push(p); });
@@ -223,7 +214,6 @@ function supprimerParticipation(id) {
   if (!confirm('Supprimer ?')) return;
   DB.set('participations', DB.get('participations', []).filter(function(x) { return x.id !== id; })); afficherJournaliere();
 }
-
 function enregistrerFicheMensuelle() {
   var numericIds = ['mEncadreurs','mMembresActifs','mSympathisants','mFMembres','mFSympathisants','mFNouveaux','mFoyersLumiere','mAvecGoshintai','mSansGoshintai','mFoyersSymp','mFleurs','mPotagers','mTotalPotagers','mMaisonsOuvertes','mTemoignages','mCandGoshintai','mConfInit','mConfReinit','mConfShoku','mConfKannon','mConfMitamaya','mAssistMembres','mAssistSymp','mConcessions','mTerrains','mCampagnes','mCoursEns','mCoursFleurs'];
   var f = {
@@ -303,7 +293,6 @@ function reinitialiserRechercheFreq() {
   document.getElementById('rapportFreqBox').innerHTML = '';
 }
 
-// ========== RAPPORT GLOBAL DIFFUSION ==========
 function rapportFreqGlobal() {
   var fiches = DB.get('fichesMensuelles', []).filter(function(f) { return !f.archived; });
   if (!fiches.length) { document.getElementById('rapportFreqBox').innerHTML = '<p>Aucune fiche active.</p>'; return; }
@@ -334,12 +323,12 @@ function rapportFreqGlobal() {
   html += '</tbody></table></div></div>';
   html += '<div class="entity-block" style="border-left-color:#1976d2;"><h4 style="color:#1976d2;">📝 TEXTES RASSEMBLÉS</h4>';
   html += '<div class="table-wrapper"><table class="data-table"><tbody>';
-  html += '<tr><td><b>Thèmes</b></td><td>' + textes.themes.join('<br><br>') + '</td></tr>';
-  html += '<tr><td><b>Grâces</b></td><td>' + textes.graces.join('<br><br>') + '</td></tr>';
-  html += '<tr><td><b>Points</b></td><td>' + textes.points.join('<br><br>') + '</td></tr>';
-  html += '<tr><td><b>Solutions</b></td><td>' + textes.solutions.join('<br><br>') + '</td></tr>';
-  html += '<tr><td><b>Objectifs</b></td><td>' + textes.objectifs.join('<br><br>') + '</td></tr>';
-  html += '<tr><td><b>Actions</b></td><td>' + textes.actions.join('<br><br>') + '</td></tr>';
+  html += '<tr><td><b>Thèmes</b></td><td>' + (textes.themes.join('<br><br>') || '-') + '</td></tr>';
+  html += '<tr><td><b>Grâces</b></td><td>' + (textes.graces.join('<br><br>') || '-') + '</td></tr>';
+  html += '<tr><td><b>Points</b></td><td>' + (textes.points.join('<br><br>') || '-') + '</td></tr>';
+  html += '<tr><td><b>Solutions</b></td><td>' + (textes.solutions.join('<br><br>') || '-') + '</td></tr>';
+  html += '<tr><td><b>Objectifs</b></td><td>' + (textes.objectifs.join('<br><br>') || '-') + '</td></tr>';
+  html += '<tr><td><b>Actions</b></td><td>' + (textes.actions.join('<br><br>') || '-') + '</td></tr>';
   html += '</tbody></table></div></div>';
   document.getElementById('rapportFreqBox').innerHTML = html;
 }
@@ -351,7 +340,7 @@ function rapportFreqDetaille() {
 }
 
 // ============================================================
-// ============ MODULE 2 : RAPPORT NUMÉRIQUE ==================
+// MODULE 2 : RAPPORT NUMÉRIQUE
 // ============================================================
 
 function ajouterEntiteNum() {
@@ -365,19 +354,16 @@ function ajouterEntiteNum() {
   DB.set('entitesNum', entites); reinitialiserFormEntiteNum(); refreshAll(); alert('✅ Entité ajoutée');
 }
 function reinitialiserFormEntiteNum() {
-  var a = document.getElementById('nNomEntite'); if (a) a.value = '';
-  var b = document.getElementById('nResponsable'); if (b) b.value = '';
-  var c = document.getElementById('nTypeEntite'); if (c) c.selectedIndex = 0;
+  document.getElementById('nNomEntite').value = '';
+  document.getElementById('nResponsable').value = '';
+  document.getElementById('nTypeEntite').selectedIndex = 0;
 }
 function rafraichirEntitesNum() {
   var entites = DB.get('entitesNum', []).filter(function(e) { return !e.archived; });
-  var sel = document.getElementById('nEntite');
-  if (!sel) return;
-  var val = sel.value;
-  var opts = '';
+  var sel = document.getElementById('nEntite'); if (!sel) return;
+  var val = sel.value; var opts = '';
   entites.forEach(function(e) { opts += '<option value="' + e.id + '">' + e.type + ' - ' + e.nom + '</option>'; });
-  sel.innerHTML = opts;
-  if (val) sel.value = val;
+  sel.innerHTML = opts; if (val) sel.value = val;
 }
 function getEntiteNomNum(id) {
   var e = DB.get('entitesNum', []).find(function(x) { return x.id === id; });
@@ -388,8 +374,7 @@ function afficherListeEntitesNum() {
   var search = (document.getElementById('searchEntiteListeNum') ? document.getElementById('searchEntiteListeNum').value : '').toUpperCase();
   var entites = filtrerListe(DB.get('entitesNum', []), filtre);
   if (search) entites = entites.filter(function(e) { return e.nom.indexOf(search) !== -1; });
-  var box = document.getElementById('listeEntitesNum');
-  if (!box) return;
+  var box = document.getElementById('listeEntitesNum'); if (!box) return;
   if (!entites.length) { box.innerHTML = '<p>Aucune entité.</p>'; return; }
   var html = '';
   entites.forEach(function(e) {
@@ -419,21 +404,13 @@ function supprimerEntiteNum(id) {
   DB.set('entitesNum', DB.get('entitesNum', []).filter(function(x) { return x.id !== id; }));
   refreshAll();
 }
-
 function enregistrerFicheNumerique() {
   var f = {
-    id: uid(),
-    entiteId: document.getElementById('nEntite').value,
-    mois: document.getElementById('nMois').value,
-    annee: document.getElementById('nAnnee').value,
-    responsable: document.getElementById('nResponsableFiche').value,
-    observation: document.getElementById('nObservation').value,
-    archived: false
+    id: uid(), entiteId: document.getElementById('nEntite').value, mois: document.getElementById('nMois').value, annee: document.getElementById('nAnnee').value,
+    responsable: document.getElementById('nResponsableFiche').value, observation: document.getElementById('nObservation').value, archived: false
   };
-  // Champs numériques
   var numericIds = ['nBaptises','nMembresActifs','nMembresInactifs','nInities','nMembresEntres','nMembresSortis','nMembresRecuperes','nMembresDecedes','nFreqMembres','nFreqSymp','nFreqNouveaux','nAcheminees','nAchemineesRestees','nNouveauxRestes','nCulteMembres','nCulteSymp','nCulteNouveaux','nFamillesJohrei','nElevesSanguetsu','nFleursDist','nChampsUnite','nChampsFloral','nAgriculteurs','nAnciensPotagers','nNouveauxPotagers','nAutelsFamilles','nMitamaya','nSoreiSaishi','nShinreiSaichi','nAssistMembres','nAssistSymp','nNettoyageMembres','nNettoyageSymp'];
   numericIds.forEach(function(id) { var el = document.getElementById(id); f[id] = el ? (parseInt(el.value) || 0) : 0; });
-  
   if (!f.entiteId) return alert('⚠️ Enregistrez d\'abord une entité');
   var list = DB.get('fichesNumeriques', []); list.push(f); DB.set('fichesNumeriques', list); alert('✅ Fiche numérique enregistrée');
 }
@@ -443,7 +420,6 @@ function reinitialiserFormFicheNum() {
   var nums = ['nBaptises','nMembresActifs','nMembresInactifs','nInities','nMembresEntres','nMembresSortis','nMembresRecuperes','nMembresDecedes','nFreqMembres','nFreqSymp','nFreqNouveaux','nAcheminees','nAchemineesRestees','nNouveauxRestes','nCulteMembres','nCulteSymp','nCulteNouveaux','nFamillesJohrei','nElevesSanguetsu','nFleursDist','nChampsUnite','nChampsFloral','nAgriculteurs','nAnciensPotagers','nNouveauxPotagers','nAutelsFamilles','nMitamaya','nSoreiSaishi','nShinreiSaichi','nAssistMembres','nAssistSymp','nNettoyageMembres','nNettoyageSymp'];
   nums.forEach(function(id) { var el = document.getElementById(id); if (el) el.value = 0; });
 }
-
 function tableFicheNumerique(f) {
   var h = '<div class="entity-block"' + (f.archived ? ' style="opacity:0.7;background:#f0f0f0"' : '') + '>';
   h += '<h4>📍 ' + echapper(getEntiteNomNum(f.entiteId)) + ' — ' + f.mois + ' ' + f.annee + '</h4>';
@@ -454,8 +430,8 @@ function tableFicheNumerique(f) {
   h += '</div>';
   h += '<div class="table-wrapper"><table class="data-table"><tbody>';
   h += '<tr><td>Responsable</td><td>' + echapper(f.responsable) + '</td></tr>';
-  h += '<tr><th colspan="2" style="background:#4caf50;">Membres Baptisés</th></tr>';
-  h += '<tr><td>Membres Baptisés</td><td>' + (f.nBaptises || 0) + '</td></tr>';
+  h += '<tr><th colspan="2" style="background:#4caf50;">Membres</th></tr>';
+  h += '<tr><td>Membres</td><td>' + (f.nBaptises || 0) + '</td></tr>';
   h += '<tr><td>Actifs</td><td>' + (f.nMembresActifs || 0) + '</td></tr>';
   h += '<tr><td>Inactifs</td><td>' + (f.nMembresInactifs || 0) + '</td></tr>';
   h += '<tr><td>Initiés</td><td>' + (f.nInities || 0) + '</td></tr>';
@@ -534,30 +510,23 @@ function reinitialiserRechercheNum() {
   document.getElementById('rapportNumBox').innerHTML = '';
 }
 
-// ========== RAPPORT GLOBAL NUMÉRIQUE ==========
 function rapportNumGlobal() {
   var fiches = DB.get('fichesNumeriques', []).filter(function(f) { return !f.archived; });
   if (!fiches.length) { document.getElementById('rapportNumBox').innerHTML = '<p>Aucune fiche active.</p>'; return; }
   var nomFiche = document.getElementById('nomRapportNumGlobal').value.trim() || 'EMM KASAÏ CENTRAL';
-  
   var totaux = {};
   var numericIds = ['nBaptises','nMembresActifs','nMembresInactifs','nInities','nMembresEntres','nMembresSortis','nMembresRecuperes','nMembresDecedes','nFreqMembres','nFreqSymp','nFreqNouveaux','nAcheminees','nAchemineesRestees','nNouveauxRestes','nCulteMembres','nCulteSymp','nCulteNouveaux','nFamillesJohrei','nElevesSanguetsu','nFleursDist','nChampsUnite','nChampsFloral','nAgriculteurs','nAnciensPotagers','nNouveauxPotagers','nAutelsFamilles','nMitamaya','nSoreiSaishi','nShinreiSaichi','nAssistMembres','nAssistSymp','nNettoyageMembres','nNettoyageSymp'];
   numericIds.forEach(function(id) { totaux[id] = 0; });
-  
   var observations = [];
   fiches.forEach(function(f) {
     numericIds.forEach(function(k) { totaux[k] += (parseInt(f[k]) || 0); });
-    if (f.observation && f.observation.trim()) {
-      observations.push('<b>' + getEntiteNomNum(f.entiteId) + ' :</b> ' + echapper(f.observation));
-    }
+    if (f.observation && f.observation.trim()) observations.push('<b>' + getEntiteNomNum(f.entiteId) + ' :</b> ' + echapper(f.observation));
   });
-
   var html = '<div class="rapport-header"><h3>🔢 RAPPORT NUMÉRIQUE ' + echapper(nomFiche).toUpperCase() + '</h3></div>';
   html += '<div class="entity-block"><h4>🌍 TOTAUX GLOBAUX</h4>';
   html += '<div class="table-wrapper"><table class="data-table"><tbody>';
-  
-  html += '<tr><th colspan="2" style="background:#4caf50;">Membres Baptisés</th></tr>';
-  html += '<tr><td>Membres Baptisés</td><td class="num">' + totaux.nBaptises + '</td></tr>';
+  html += '<tr><th colspan="2" style="background:#4caf50;">Membres</th></tr>';
+  html += '<tr><td>Membres</td><td class="num">' + totaux.nBaptises + '</td></tr>';
   html += '<tr><td>Actifs</td><td class="num">' + totaux.nMembresActifs + '</td></tr>';
   html += '<tr><td>Inactifs</td><td class="num">' + totaux.nMembresInactifs + '</td></tr>';
   html += '<tr><td>Initiés</td><td class="num">' + totaux.nInities + '</td></tr>';
@@ -565,7 +534,6 @@ function rapportNumGlobal() {
   html += '<tr><td>Sortis du pays</td><td class="num">' + totaux.nMembresSortis + '</td></tr>';
   html += '<tr><td>Récupérés</td><td class="num">' + totaux.nMembresRecuperes + '</td></tr>';
   html += '<tr><td>Décédés</td><td class="num">' + totaux.nMembresDecedes + '</td></tr>';
-  
   html += '<tr><th colspan="2" style="background:#4caf50;">Fréquentation Mensuelle</th></tr>';
   html += '<tr><td>Membres</td><td class="num">' + totaux.nFreqMembres + '</td></tr>';
   html += '<tr><td>Sympathisants</td><td class="num">' + totaux.nFreqSymp + '</td></tr>';
@@ -573,12 +541,10 @@ function rapportNumGlobal() {
   html += '<tr><td>Acheminées</td><td class="num">' + totaux.nAcheminees + '</td></tr>';
   html += '<tr><td>Acheminées restées</td><td class="num">' + totaux.nAchemineesRestees + '</td></tr>';
   html += '<tr><td>Nouveaux venus restés</td><td class="num">' + totaux.nNouveauxRestes + '</td></tr>';
-  
   html += '<tr><th colspan="2" style="background:#4caf50;">Culte Mensuel</th></tr>';
   html += '<tr><td>Membres</td><td class="num">' + totaux.nCulteMembres + '</td></tr>';
   html += '<tr><td>Sympathisants</td><td class="num">' + totaux.nCulteSymp + '</td></tr>';
   html += '<tr><td>Nouveaux venus</td><td class="num">' + totaux.nCulteNouveaux + '</td></tr>';
-  
   html += '<tr><th colspan="2" style="background:#4caf50;">Activités Religieuses</th></tr>';
   html += '<tr><td>Familles Johrei</td><td class="num">' + totaux.nFamillesJohrei + '</td></tr>';
   html += '<tr><td>Élèves Sanguetsu</td><td class="num">' + totaux.nElevesSanguetsu + '</td></tr>';
@@ -592,24 +558,19 @@ function rapportNumGlobal() {
   html += '<tr><td>Mitamaya</td><td class="num">' + totaux.nMitamaya + '</td></tr>';
   html += '<tr><td>Sorei Saishi</td><td class="num">' + totaux.nSoreiSaishi + '</td></tr>';
   html += '<tr><td>Shinrei Saichi</td><td class="num">' + totaux.nShinreiSaichi + '</td></tr>';
-  
   html += '<tr><th colspan="2" style="background:#4caf50;">Assistance Religieuse</th></tr>';
   html += '<tr><td>Membres</td><td class="num">' + totaux.nAssistMembres + '</td></tr>';
   html += '<tr><td>Sympathisants</td><td class="num">' + totaux.nAssistSymp + '</td></tr>';
-  
   html += '<tr><th colspan="2" style="background:#4caf50;">Nettoyage des Maisons</th></tr>';
   html += '<tr><td>Membres</td><td class="num">' + totaux.nNettoyageMembres + '</td></tr>';
   html += '<tr><td>Sympathisants</td><td class="num">' + totaux.nNettoyageSymp + '</td></tr>';
-  
   html += '</tbody></table></div></div>';
-
   if (observations.length) {
     html += '<div class="entity-block" style="border-left-color:#1976d2;"><h4 style="color:#1976d2;">📝 OBSERVATIONS</h4>';
     html += '<div class="table-wrapper"><table class="data-table"><tbody>';
     observations.forEach(function(o) { html += '<tr><td>' + o + '</td></tr>'; });
     html += '</tbody></table></div></div>';
   }
-
   document.getElementById('rapportNumBox').innerHTML = html;
 }
 function rapportNumDetaille() {
@@ -620,7 +581,7 @@ function rapportNumDetaille() {
 }
 
 // ============================================================
-// ============ DASHBOARDS ====================================
+// DASHBOARDS
 // ============================================================
 function afficherDashboardDiffusion() {
   var box = document.getElementById('dashboardDiffusionBox'); if (!box) return;
@@ -643,7 +604,9 @@ function afficherDashboardNum() {
   box.innerHTML = html;
 }
 
-// ========== ANNONCES ==========
+// ============================================================
+// ANNONCES / UTILISATEURS / EXPORT
+// ============================================================
 function afficherAnnonces() {
   var list = DB.get('annonces', []);
   var box = document.getElementById('announcementsBox');
@@ -651,13 +614,8 @@ function afficherAnnonces() {
   if (!list.length) { box.innerHTML = '<p>Aucune annonce.</p>'; return; }
   var html = '';
   list.slice().reverse().forEach(function(a) {
-    html += '<div class="item-list">';
-    html += '<strong>📢 ' + a.date + '</strong><br>' + echapper(a.texte);
-    if (isAdmin()) {
-      html += '<div class="no-print" style="margin-top:6px">';
-      html += '<button class="btn-mini danger" onclick="supprimerAnnonce(\'' + a.id + '\')">🗑️</button>';
-      html += '</div>';
-    }
+    html += '<div class="item-list"><strong>📢 ' + a.date + '</strong><br>' + echapper(a.texte);
+    if (isAdmin()) html += '<div class="no-print" style="margin-top:6px"><button class="btn-mini danger" onclick="supprimerAnnonce(\'' + a.id + '\')">🗑️</button></div>';
     html += '</div>';
   });
   box.innerHTML = html;
@@ -671,12 +629,8 @@ function publierAnnonce() {
   DB.set('annonces', list); document.getElementById('annonceText').value = ''; afficherAnnonces(); alert('✅ Publiée');
 }
 function reinitialiserFormAnnonce() { document.getElementById('annonceText').value = ''; }
-function supprimerAnnonce(id) {
-  if (!confirm('Supprimer ?')) return;
-  DB.set('annonces', DB.get('annonces', []).filter(function(a) { return a.id !== id; })); afficherAnnonces();
-}
+function supprimerAnnonce(id) { if (!confirm('Supprimer ?')) return; DB.set('annonces', DB.get('annonces', []).filter(function(a) { return a.id !== id; })); afficherAnnonces(); }
 
-// ========== UTILISATEURS ==========
 function ajouterUtilisateur() {
   if (!isAdmin()) return alert('Réservé admin');
   var nom = document.getElementById('uNom').value.trim().toLowerCase();
@@ -705,54 +659,34 @@ function afficherUtilisateurs() {
   html += '</tbody></table></div>';
   box.innerHTML = html;
 }
-function supprimerUtilisateur(id) {
-  if (!isAdmin()) return alert('Réservé admin');
-  if (!confirm('Supprimer ?')) return;
-  DB.set('users', DB.get('users', []).filter(function(u) { return u.id !== id; })); afficherUtilisateurs();
-}
+function supprimerUtilisateur(id) { if (!isAdmin()) return alert('Réservé admin'); if (!confirm('Supprimer ?')) return; DB.set('users', DB.get('users', []).filter(function(u) { return u.id !== id; })); afficherUtilisateurs(); }
 
-// ========== EXPORT / IMPORT ==========
 function exporterDonnees() {
   var data = {};
   ['users','entites','participations','fichesMensuelles','entitesNum','fichesNumeriques','annonces'].forEach(function(k) { data[k] = DB.get(k, []); });
   var json = JSON.stringify(data, null, 2);
-  try {
-    var blob = new Blob([json], { type: 'application/json' });
-    var url = URL.createObjectURL(blob);
-    var a = document.createElement('a'); a.href = url; a.download = 'emm_rapports_' + Date.now() + '.json';
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
-  } catch (e) { alert('Erreur export'); }
+  try { var blob = new Blob([json], { type: 'application/json' }); var url = URL.createObjectURL(blob); var a = document.createElement('a'); a.href = url; a.download = 'emm_rapports_' + Date.now() + '.json'; document.body.appendChild(a); a.click(); document.body.removeChild(a); setTimeout(function() { URL.revokeObjectURL(url); }, 1000); } catch (e) { alert('Erreur export'); }
 }
 function restaurerTexte() {
   var txt = document.getElementById('importText').value.trim();
   if (!txt) return alert('Collez d\'abord un JSON');
-  try {
-    var data = JSON.parse(txt);
-    Object.keys(data).forEach(function(k) { DB.set(k, data[k]); });
-    alert('✅ Restauré'); refreshAll(); afficherDashboardDiffusion(); afficherDashboardNum();
-  } catch (e) { alert('❌ JSON invalide'); }
+  try { var data = JSON.parse(txt); Object.keys(data).forEach(function(k) { DB.set(k, data[k]); }); alert('✅ Restauré'); refreshAll(); afficherDashboardDiffusion(); afficherDashboardNum(); } catch (e) { alert('❌ JSON invalide'); }
 }
 function importerDonnees(ev) {
   var file = ev.target.files[0]; if (!file) return;
   var reader = new FileReader();
-  reader.onload = function(e) {
-    try {
-      var data = JSON.parse(e.target.result);
-      Object.keys(data).forEach(function(k) { DB.set(k, data[k]); });
-      alert('✅ Restauré'); refreshAll();
-    } catch (err) { alert('❌ Fichier invalide'); }
-  };
+  reader.onload = function(e) { try { var data = JSON.parse(e.target.result); Object.keys(data).forEach(function(k) { DB.set(k, data[k]); }); alert('✅ Restauré'); refreshAll(); } catch (err) { alert('❌ Fichier invalide'); } };
   reader.readAsText(file);
 }
 function toutEffacer() {
   if (!isAdmin()) return alert('Réservé admin');
   if (!confirm('⚠️ Effacer TOUTES les données (sauf utilisateurs) ?')) return;
-  var users = DB.get('users', []);
-  localStorage.clear(); DB.set('users', users); initDB(); alert('✅ Effacé'); location.reload();
+  var users = DB.get('users', []); localStorage.clear(); DB.set('users', users); initDB(); alert('✅ Effacé'); location.reload();
 }
 
-// ========== IMPRESSION / EXPORT ==========
+// ============================================================
+// IMPRESSION / EXPORT
+// ============================================================
 function imprimerRapportFreq() { imprimerBox('rapportFreqBox'); }
 function imprimerRapportNum() { imprimerBox('rapportNumBox'); }
 function imprimerBox(boxId) {
@@ -773,15 +707,63 @@ function exporterWordBox(boxId, nom) {
   var a = document.createElement('a'); a.href = url; a.download = 'Rapport_' + nom + '_' + Date.now() + '.doc';
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
 }
-function exporterPDFFreq() { exporterPDFBox('rapportFreqBox'); }
-function exporterPDFNum() { exporterPDFBox('rapportNumBox'); }
-function exporterPDFBox(boxId) {
+
+// ========== PDF avec options ==========
+function exporterPDFFreq() { ouvrirPdfModal('rapportFreqBox'); }
+function exporterPDFNum() { ouvrirPdfModal('rapportNumBox'); }
+
+function ouvrirPdfModal(boxId) {
   var contenu = document.getElementById(boxId).innerHTML;
   if (!contenu) return alert('Rapport vide');
-  var w = window.open('', '_blank');
-  w.document.write('<html><head><meta charset="UTF-8"><style>body{font-family:Arial;padding:20px}table{width:100%;border-collapse:collapse;font-size:12px}th{background:#0a6e2c;color:white;padding:8px}td{padding:7px;border-bottom:1px solid #ddd}.no-print{display:none !important}</style></head><body><h1 style="text-align:center;color:#0a6e2c">EMM RAPPORTS</h1><hr>'+contenu+'</body></html>');
-  w.document.close(); setTimeout(function() { w.print(); }, 800);
+  pdfRapportActuel = contenu;
+  var prefs = JSON.parse(localStorage.getItem('emmPdfPrefs') || '{}');
+  document.getElementById('pdfPolice').value = prefs.police || 'Arial';
+  document.getElementById('pdfTaille').value = prefs.taille || '11';
+  document.getElementById('pdfStyle').value = prefs.style || 'normal';
+  document.getElementById('pdfInterligne').value = prefs.interligne || '1.4';
+  document.getElementById('pdfOptionsModal').style.display = 'flex';
 }
+
+function closePdfModal() {
+  document.getElementById('pdfOptionsModal').style.display = 'none';
+  pdfRapportActuel = null;
+}
+
+function genererPDFAvecOptions() {
+  if (!pdfRapportActuel) return;
+  var police = document.getElementById('pdfPolice').value;
+  var taille = document.getElementById('pdfTaille').value;
+  var style = document.getElementById('pdfStyle').value;
+  var interligne = document.getElementById('pdfInterligne').value;
+  localStorage.setItem('emmPdfPrefs', JSON.stringify({ police: police, taille: taille, style: style, interligne: interligne }));
+  var fontWeight = style === 'bold' ? 'bold' : 'normal';
+  var w = window.open('', '_blank');
+  w.document.write(
+    '<html><head><meta charset="UTF-8"><style>' +
+    'body { font-family: "' + police + '", serif; padding: 20px; font-size: ' + taille + 'pt; font-weight: ' + fontWeight + '; line-height: ' + interligne + '; }' +
+    'h1, h2, h3, h4 { color: #0a6e2c; margin: 6px 0; font-weight: bold; }' +
+    'h1 { font-size: ' + (parseInt(taille) + 6) + 'pt; text-align: center; }' +
+    'h3 { font-size: ' + (parseInt(taille) + 2) + 'pt; }' +
+    'h4 { font-size: ' + (parseInt(taille) + 1) + 'pt; }' +
+    'table { width: 100%; border-collapse: collapse; font-size: ' + taille + 'pt; font-weight: ' + fontWeight + '; }' +
+    'th { background: #0a6e2c; color: white; padding: 5px; text-align: left; font-size: ' + taille + 'pt; }' +
+    'td { padding: 4px 5px; border-bottom: 1px solid #ddd; }' +
+    'td.num { text-align: right; }' +
+    '.no-print { display: none !important; }' +
+    '.entity-block { border: 1px solid #ccc; padding: 8px; margin-bottom: 10px; page-break-inside: avoid; }' +
+    '.rapport-header { border-bottom: 2px solid #0a6e2c; padding-bottom: 8px; margin-bottom: 10px; text-align: center; }' +
+    '@media print { body { padding: 10px; } }' +
+    '</style></head><body>' +
+    '<h1>EMM RAPPORTS</h1>' +
+    '<hr>' +
+    pdfRapportActuel +
+    '</body></html>'
+  );
+  w.document.close();
+  setTimeout(function() { w.print(); }, 500);
+  closePdfModal();
+}
+
 function partagerRapportFreq() { partagerBox('rapportFreqBox','Diffusion'); }
 function partagerRapportNum() { partagerBox('rapportNumBox','Numérique'); }
 function partagerBox(boxId, nom) {
@@ -798,20 +780,13 @@ function partagerBox(boxId, nom) {
 
 // ========== PWA ==========
 var deferredPrompt = null;
-window.addEventListener('beforeinstallprompt', function(e) {
-  e.preventDefault(); deferredPrompt = e;
-  var btn = document.getElementById('installBtn'); if (btn) btn.style.display = 'block';
-});
+window.addEventListener('beforeinstallprompt', function(e) { e.preventDefault(); deferredPrompt = e; var btn = document.getElementById('installBtn'); if (btn) btn.style.display = 'block'; });
 function installApp() {
   if (!deferredPrompt) return alert('Menu navigateur → "Ajouter à l\'écran d\'accueil"');
   deferredPrompt.prompt();
-  deferredPrompt.userChoice.then(function() {
-    deferredPrompt = null;
-    var btn = document.getElementById('installBtn'); if (btn) btn.style.display = 'none';
-  });
+  deferredPrompt.userChoice.then(function() { deferredPrompt = null; var btn = document.getElementById('installBtn'); if (btn) btn.style.display = 'none'; });
 }
 
-// ========== REFRESH ==========
 function refreshAll() {
   rafraichirEntites(); afficherListeEntites(); afficherJournaliere();
   rafraichirEntitesNum(); afficherListeEntitesNum();
