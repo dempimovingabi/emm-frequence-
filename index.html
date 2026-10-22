@@ -10,13 +10,14 @@
 </head>
 <body>
 
-<!-- SPLASH -->
+<!-- SPLASH SCREEN (Animation texte) -->
 <div id="splashScreen" class="screen active">
   <div class="splash-content">
-    <img src="logo.png" alt="EMM" class="splash-logo" onerror="this.style.display='none'; document.getElementById('splashFallback').style.display='flex';">
-    <div id="splashFallback" class="splash-fallback" style="display:none">EMM</div>
-    <h1 class="splash-title">ÉGLISE MESSIANIQUE MONDIALE</h1>
-    <h2 class="splash-subtitle">EMM FRÉQUENCE</h2>
+    <div class="splash-anim">
+      <span class="letter">E</span><span class="letter">M</span><span class="letter">M</span>
+      <span class="space"></span>
+      <span class="letter">F</span><span class="letter">R</span><span class="letter">É</span><span class="letter">Q</span><span class="letter">U</span><span class="letter">E</span><span class="letter">N</span><span class="letter">C</span><span class="letter">E</span>
+    </div>
     <div class="splash-loader"></div>
   </div>
 </div>
@@ -24,8 +25,6 @@
 <!-- CONNEXION -->
 <div id="loginScreen" class="screen">
   <div class="login-box">
-    <img src="logo.png" alt="EMM" class="login-logo" onerror="this.style.display='none'; document.getElementById('loginFallback').style.display='flex';">
-    <div id="loginFallback" class="login-fallback" style="display:none">EMM</div>
     <h1>ÉGLISE MESSIANIQUE MONDIALE</h1>
     <h2>EMM FRÉQUENCE</h2>
     <p class="subtitle">Gestion des Fréquences</p>
@@ -39,17 +38,21 @@
 <!-- ACCUEIL -->
 <div id="mainScreen" class="screen">
   <header class="app-header">
-    <img src="logo.png" class="header-logo" alt="Logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-    <div class="header-logo-fallback" style="display:none">EMM</div>
-    <div><h1>EMM FRÉQUENCE</h1><p id="userRoleLabel">Gestion des Fréquences</p></div>
+    <button class="btn-menu" onclick="toggleMenu()">☰</button>
+    <div style="flex:1"><h1>EMM FRÉQUENCE</h1><p id="userRoleLabel">Gestion des Fréquences</p></div>
     <button class="btn-logout" onclick="logout()" title="Se déconnecter">⏻</button>
   </header>
 
-  <div class="main-tabs">
-    <button class="main-tab active" onclick="switchMainTab('general', this)">📊 Général</button>
-    <button class="main-tab" onclick="switchMainTab('frequence', this)">📈 Fréquence</button>
-    <button class="main-tab" onclick="switchMainTab('admin', this)">⚙️ Admin</button>
+  <!-- MENU LATÉRAL (Drawer) -->
+  <div id="sideMenu" class="side-menu">
+    <div class="menu-header">
+      <h2>Menu</h2>
+    </div>
+    <button class="menu-item active" onclick="switchMainTab('general', this)">📊 Général</button>
+    <button class="menu-item" onclick="switchMainTab('frequence', this)">📈 Fréquence</button>
+    <button class="menu-item" onclick="switchMainTab('admin', this)">⚙️ Admin</button>
   </div>
+  <div id="menuOverlay" class="menu-overlay" onclick="toggleMenu()"></div>
 
   <!-- ONGLET GÉNÉRAL -->
   <div id="tab-general" class="main-tab-content active">
@@ -287,4 +290,4 @@ if ('serviceWorker' in navigator) {
 }
 </script>
 </body>
-</html>
+                                                                </html>
