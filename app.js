@@ -1,5 +1,5 @@
 // ============================================
-// EMM RAPPORTS — LOGIQUE PRINCIPALE v2
+// EMM RAPPORTS — LOGIQUE PRINCIPALE v3
 // ============================================
 
 var currentUser = null;
@@ -431,7 +431,7 @@ function tableFicheNumerique(f) {
   h += '<div class="table-wrapper"><table class="data-table"><tbody>';
   h += '<tr><td>Responsable</td><td>' + echapper(f.responsable) + '</td></tr>';
   h += '<tr><th colspan="2" style="background:#4caf50;">Membres</th></tr>';
-  h += '<tr><td>Membres</td><td>' + (f.nBaptises || 0) + '</td></tr>';
+  h += '<tr><td>Baptisés</td><td>' + (f.nBaptises || 0) + '</td></tr>';
   h += '<tr><td>Actifs</td><td>' + (f.nMembresActifs || 0) + '</td></tr>';
   h += '<tr><td>Inactifs</td><td>' + (f.nMembresInactifs || 0) + '</td></tr>';
   h += '<tr><td>Initiés</td><td>' + (f.nInities || 0) + '</td></tr>';
@@ -526,7 +526,7 @@ function rapportNumGlobal() {
   html += '<div class="entity-block"><h4>🌍 TOTAUX GLOBAUX</h4>';
   html += '<div class="table-wrapper"><table class="data-table"><tbody>';
   html += '<tr><th colspan="2" style="background:#4caf50;">Membres</th></tr>';
-  html += '<tr><td>Membres</td><td class="num">' + totaux.nBaptises + '</td></tr>';
+  html += '<tr><td>Baptisés</td><td class="num">' + totaux.nBaptises + '</td></tr>';
   html += '<tr><td>Actifs</td><td class="num">' + totaux.nMembresActifs + '</td></tr>';
   html += '<tr><td>Inactifs</td><td class="num">' + totaux.nMembresInactifs + '</td></tr>';
   html += '<tr><td>Initiés</td><td class="num">' + totaux.nInities + '</td></tr>';
@@ -708,7 +708,6 @@ function exporterWordBox(boxId, nom) {
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
 }
 
-// ========== PDF avec options ==========
 function exporterPDFFreq() { ouvrirPdfModal('rapportFreqBox'); }
 function exporterPDFNum() { ouvrirPdfModal('rapportNumBox'); }
 
@@ -723,12 +722,10 @@ function ouvrirPdfModal(boxId) {
   document.getElementById('pdfInterligne').value = prefs.interligne || '1.4';
   document.getElementById('pdfOptionsModal').style.display = 'flex';
 }
-
 function closePdfModal() {
   document.getElementById('pdfOptionsModal').style.display = 'none';
   pdfRapportActuel = null;
 }
-
 function genererPDFAvecOptions() {
   if (!pdfRapportActuel) return;
   var police = document.getElementById('pdfPolice').value;
@@ -778,7 +775,6 @@ function partagerBox(boxId, nom) {
   else window.location.href = 'https://wa.me/?text=' + encodeURIComponent(msg);
 }
 
-// ========== PWA ==========
 var deferredPrompt = null;
 window.addEventListener('beforeinstallprompt', function(e) { e.preventDefault(); deferredPrompt = e; var btn = document.getElementById('installBtn'); if (btn) btn.style.display = 'block'; });
 function installApp() {
